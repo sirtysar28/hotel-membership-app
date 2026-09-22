@@ -102,4 +102,4 @@ Pending → Payment Submitted → **Paid** / Failed / Expired / Refunded / Cance
 - Logo aplikasi & email: `public/images/logo.png`, `logo-header.png`, `logo-header-light.png`. Untuk logo tampil benar di email, set `APP_URL=https://hotel-membership.trijayasolution.com` di .env produksi.
 - Untuk produksi: set APP_ENV=production, APP_DEBUG=false, konfigurasi SMTP, dan ganti semua password demo.
 # hotel-membership-app
-# hotel-membership-app
+
