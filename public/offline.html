@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offline — Hotel Ciputra Membership</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #0a1c32, #0f2a4a, #123f6a);
+            color: #fff; text-align: center; padding: 24px;
+        }
+        .card { max-width: 420px; }
+        .logo {
+            width: 88px; height: 88px; margin: 0 auto 24px;
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(251, 191, 36, .25);
+            background: #0f2a4a;
+            display: block;
+        }
+        h1 { font-size: 24px; margin-bottom: 12px; }
+        p { color: #bcd0e8; font-size: 14px; line-height: 1.7; margin-bottom: 28px; }
+        .wifi { font-size: 44px; display: block; margin-bottom: 12px; }
+        a {
+            display: inline-block; background: #fbbf24; color: #0f2a4a;
+            font-weight: 700; text-decoration: none; padding: 13px 34px;
+            border-radius: 14px; transition: background .2s;
+        }
+        a:hover { background: #fcd34d; }
+        footer { margin-top: 40px; font-size: 11px; color: #64788f; }
+        footer a { background: none; color: #fbbf24; padding: 0; font-weight: 600; }
+        footer a:hover { color: #fcd34d; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img class="logo" src="/icons/icon-192.png" alt="Logo Hotel Ciputra Membership">
+        <span class="wifi">📡</span>
+        <h1>Tidak Ada Koneksi Internet</h1>
+        <p>Anda sedang offline. Periksa koneksi internet Anda lalu coba muat ulang halaman ini. Aplikasi akan kembali tersedia begitu koneksi pulih.</p>
+        <a href="/">Muat Ulang</a>
+        <footer>
+            &copy; <span id="y"></span> Hotel Ciputra Membership —<br>
+            Developed by <a href="https://trijayasolution.com" target="_blank" rel="noopener">Trijaya Solution</a>
+        </footer>
+    </div>
+    <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
