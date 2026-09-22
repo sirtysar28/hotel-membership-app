@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Hotel;
 use App\Models\RedemptionRequest;
 use App\Models\Voucher;
@@ -167,5 +168,22 @@ class VoucherController extends Controller
                 'expires_at' => $voucher->expires_at?->format('d M Y'),
             ],
         ]);
+    }
+
+    /**
+     * CPC v2.0 §13 — Slip cetak/keluaran voucer setelah persetujuan manajer.
+     * Memuat ID Anggota, ID Voucer, Jenis Voucer, dan info persetujuan/penukaran.
+     * View standalone (siap cetak / print-to-PDF via browser).
+     */
+    public function slip(RedemptionRequest $redemption): View
+    {
+        abort_unless($redemption->status === RedemptionRequest::APPROVED, 404, 'Slip hanya tersedia untuk penukaran yang disetujui.');
+
+        $redemption->load(['voucher.type', 'member.level', 'member.hotel', 'requester', 'decider', 'hotel']);
+
+        AuditLog::record('voucher_slip_printed', 'Voucher', $redemption->voucher_id,
+            "Slip cetak voucer {$redemption->voucher_no} diakses oleh " . auth()->user()->name);
+
+        return view('admin.vouchers.slip', ['redemption' => $redemption]);
     }
 }

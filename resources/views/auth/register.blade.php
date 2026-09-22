@@ -39,9 +39,46 @@
                         <label class="block text-sm font-medium text-gray-700">Email *</label>
                         <input type="email" name="email" value="{{ old('email') }}" required class="dup-field mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
                     </div>
-                    <div>
+                    <div class="sm:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Mobile Phone *</label>
-                        <input name="phone" value="{{ old('phone') }}" required placeholder="08xxxxxxxxxx" class="dup-field mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
+                        <div class="mt-1 flex gap-2">
+                            <select name="phone_country_code" class="dup-field border border-gray-300 rounded-lg px-2 py-2.5 bg-white w-auto shrink-0" title="Kode negara nomor HP" style="min-width:118px">
+                                @php
+                                    $countryCodes = [
+                                        '+62' => '🇮🇩 +62 ID',
+                                        '+60' => '🇲🇾 +60 MY',
+                                        '+65' => '🇸🇬 +65 SG',
+                                        '+66' => '🇹🇭 +66 TH',
+                                        '+63' => '🇵🇭 +63 PH',
+                                        '+84' => '🇻🇳 +84 VN',
+                                        '+855' => '🇰🇭 +855 KH',
+                                        '+81' => '🇯🇵 +81 JP',
+                                        '+82' => '🇰🇷 +82 KR',
+                                        '+86' => '🇨🇳 +86 CN',
+                                        '+852' => '🇭🇰 +852 HK',
+                                        '+886' => '🇹🇼 +886 TW',
+                                        '+91' => '🇮🇳 +91 IN',
+                                        '+971' => '🇦🇪 +971 UEA',
+                                        '+966' => '🇸🇦 +966 SA',
+                                        '+61' => '🇦🇺 +61 AU',
+                                        '+64' => '🇳🇿 +64 NZ',
+                                        '+44' => '🇬🇧 +44 UK',
+                                        '+49' => '🇩🇪 +49 DE',
+                                        '+33' => '🇫🇷 +33 FR',
+                                        '+31' => '🇳🇱 +31 NL',
+                                        '+39' => '🇮🇹 +39 IT',
+                                        '+90' => '🇹🇷 +90 TR',
+                                        '+7' => '🇷🇺 +7 RU',
+                                        '+1' => '🇺🇸 +1 US/CA',
+                                    ];
+                                @endphp
+                                @foreach($countryCodes as $code => $label)
+                                    <option value="{{ $code }}" @selected(old('phone_country_code', '+62') === $code)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <input name="phone" value="{{ old('phone') }}" required placeholder="8123456789 (tanpa 0 / tanpa kode negara)" class="dup-field w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Pilih kode negara bila nomor HP berasal dari luar Indonesia (update #19).</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
@@ -79,6 +116,11 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Occupation</label>
                         <input name="occupation" value="{{ old('occupation') }}" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">No. Referensi Bukti Fisik <span class="text-gray-400 font-normal">(dari Accounting — opsional)</span></label>
+                        <input name="proof_reference" value="{{ old('proof_reference') }}" placeholder="mis. BUKTI-ACC-00123" maxlength="80" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
+                        <p class="text-xs text-gray-400 mt-1">Nomor referensi bukti fisik pembayaran/data dari bagian accounting (update #10).</p>
                     </div>
                 </div>
             </fieldset>
@@ -290,7 +332,7 @@ async function runCheck() {
     const data = {
         full_name: form.full_name.value.trim(),
         email: form.email.value.trim(),
-        phone: form.phone.value.trim(),
+        phone: (form.phone_country_code ? form.phone_country_code.value : '') + form.phone.value.trim(),
         dob: form.dob.value,
         id_number: form.id_number.value.trim(),
     };

@@ -222,8 +222,55 @@ class ReportController extends Controller
             ->implode('; ') ?: '-';
     }
 
+    /**
+     * Filter laporan (update #15): dropdown preset per tanggal / per bulan utk laporan harian,
+     * plus rentang kustom. Preset diterjemahkan menjadi from/to sehingga CSV/PDF ikut terfilter.
+     */
     private function filters(Request $request): array
     {
-        return $request->only(['hotel_id', 'type', 'level_id', 'status', 'from', 'to']);
+        $filters = $request->only(['hotel_id', 'type', 'level_id', 'status', 'from', 'to', 'preset', 'month']);
+
+        switch ($filters['preset'] ?? 'semua') {
+            case 'hari_ini':
+                $filters['from'] = $filters['to'] = today()->toDateString();
+                break;
+            case 'kemarin':
+                $filters['from'] = $filters['to'] = today()->subDay()->toDateString();
+                break;
+            case '7_hari':
+                $filters['from'] = today()->subDays(6)->toDateString();
+                $filters['to'] = today()->toDateString();
+                break;
+            case '30_hari':
+                $filters['from'] = today()->subDays(29)->toDateString();
+                $filters['to'] = today()->toDateString();
+                break;
+            case 'bulan_ini':
+                $filters['from'] = today()->startOfMonth()->toDateString();
+                $filters['to'] = today()->endOfMonth()->toDateString();
+                break;
+            case 'bulan':
+                if (preg_match('/^\d{4}-\d{2}$/', (string) ($filters['month'] ?? ''))) {
+                    $m = \Illuminate\Support\Carbon::parse($filters['month'] . '-01');
+                    $filters['from'] = $m->startOfMonth()->toDateString();
+                    $filters['to'] = $m->endOfMonth()->toDateString();
+                } else {
+                    $filters['preset'] = 'semua';
+                }
+                break;
+            case 'rentang':
+                if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($filters['from'] ?? ''))) {
+                    $filters['from'] = null;
+                }
+                if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($filters['to'] ?? ''))) {
+                    $filters['to'] = null;
+                }
+                break;
+            default:
+                $filters['preset'] = 'semua';
+                $filters['from'] = $filters['to'] = null;
+        }
+
+        return $filters;
     }
 }

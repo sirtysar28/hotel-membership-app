@@ -15,9 +15,9 @@
         @endforeach
     </div>
     <div class="flex gap-2">
-        <a href="{{ route('admin.reports.export', ['type' => $current, 'format' => 'csv']) }}?{{ http_build_query(request()->only(['hotel_id','type2','level_id','status','from','to'])) }}"
+        <a href="{{ route('admin.reports.export', ['type' => $current, 'format' => 'csv']) }}?{{ http_build_query(request()->only(['hotel_id','type','level_id','status','from','to','preset','month'])) }}"
            class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">Export CSV</a>
-        <a href="{{ route('admin.reports.export', ['type' => $current, 'format' => 'pdf']) }}?{{ http_build_query(request()->only(['hotel_id','type2','level_id','status','from','to'])) }}"
+        <a href="{{ route('admin.reports.export', ['type' => $current, 'format' => 'pdf']) }}?{{ http_build_query(request()->only(['hotel_id','type','level_id','status','from','to','preset','month'])) }}"
            class="bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">Export PDF</a>
     </div>
 </div>
@@ -72,16 +72,39 @@
                 </select>
             </div>
         @endif
+        {{-- Update #15 — dropdown per tanggal / per bulan utk laporan harian/bulanan --}}
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Dari</label>
-            <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Periode</label>
+            <select name="preset" id="rp-preset" class="border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                <option value="semua" @selected(($filters['preset'] ?? 'semua') === 'semua')>Semua Waktu</option>
+                <option value="hari_ini" @selected(($filters['preset'] ?? '') === 'hari_ini')>Hari Ini</option>
+                <option value="kemarin" @selected(($filters['preset'] ?? '') === 'kemarin')>Kemarin</option>
+                <option value="7_hari" @selected(($filters['preset'] ?? '') === '7_hari')>7 Hari Terakhir</option>
+                <option value="30_hari" @selected(($filters['preset'] ?? '') === '30_hari')>30 Hari Terakhir</option>
+                <option value="bulan_ini" @selected(($filters['preset'] ?? '') === 'bulan_ini')>Bulan Ini</option>
+                <option value="bulan" @selected(($filters['preset'] ?? '') === 'bulan')>Per Bulan…</option>
+                <option value="rentang" @selected(($filters['preset'] ?? '') === 'rentang')>Rentang Tanggal…</option>
+            </select>
         </div>
-        <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Sampai</label>
-            <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2">
+        <div id="rp-month" class="{{ ($filters['preset'] ?? '') === 'bulan' ? '' : 'hidden' }}">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Bulan</label>
+            <input type="month" name="month" value="{{ $filters['month'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2 bg-white">
+        </div>
+        <div id="rp-range" class="flex gap-2 {{ ($filters['preset'] ?? '') === 'rentang' ? '' : 'hidden' }}">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Dari</label>
+                <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Sampai</label>
+                <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2">
+            </div>
         </div>
         <button class="bg-brand-600 text-white px-4 py-2 rounded-lg font-medium">Terapkan</button>
     </form>
+    @if(!empty($filters['from']) && !empty($filters['to']))
+        <p class="text-xs text-gray-400 mt-3">Periode terpilih: {{ \Illuminate\Support\Carbon::parse($filters['from'])->translatedFormat('d M Y') }} – {{ \Illuminate\Support\Carbon::parse($filters['to'])->translatedFormat('d M Y') }}</p>
+    @endif
 </div>
 
 <div class="bg-white rounded-2xl shadow mt-4 overflow-x-auto">
@@ -98,4 +121,21 @@
         </tbody>
     </table>
 </div>
+
+@push('scripts')
+<script>
+    // Toggle input periode laporan berdasarkan preset (update #15)
+    const rpPreset = document.getElementById('rp-preset');
+    if (rpPreset) {
+        const rpMonth = document.getElementById('rp-month');
+        const rpRange = document.getElementById('rp-range');
+        const sync = () => {
+            rpMonth.classList.toggle('hidden', rpPreset.value !== 'bulan');
+            rpRange.classList.toggle('hidden', rpPreset.value !== 'rentang');
+        };
+        rpPreset.addEventListener('change', sync);
+        sync();
+    }
+</script>
+@endpush
 @endsection

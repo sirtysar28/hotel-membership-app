@@ -23,6 +23,9 @@ class User extends Authenticatable
         'member' => 'Member',
     ];
 
+    /** Update #18 — role yang akunnya wajib melewati approval sebelum login. */
+    public const APPROVAL_REQUIRED_ROLES = ['manager', 'staff'];
+
     /**
      * The attributes that are mass assignable.
      *

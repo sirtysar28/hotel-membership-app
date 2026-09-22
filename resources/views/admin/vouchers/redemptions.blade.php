@@ -117,6 +117,10 @@
                         @if($req->status === 'REJECTED' && $req->rejection_reason)
                             <div class="text-[11px] text-gray-400 mt-1">Alasan: {{ $req->rejection_reason }}</div>
                         @endif
+                        @if($req->status === 'APPROVED')
+                            <a href="{{ route('admin.redemptions.slip', $req) }}" target="_blank"
+                               class="inline-block mt-1.5 text-[11px] font-semibold text-brand-700 hover:text-brand-900 border border-brand-200 hover:border-brand-400 rounded-lg px-2.5 py-1">🖨 Cetak Slip</a>
+                        @endif
                     </td>
                 </tr>
             @empty

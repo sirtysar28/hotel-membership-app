@@ -57,7 +57,7 @@
                     <td class="px-4 py-3 font-mono text-xs">{{ $member->member_no }}</td>
                     <td class="px-4 py-3">
                         <div class="font-medium">{{ $member->full_name }}</div>
-                        <div class="text-xs text-gray-400">{{ $member->email }} · {{ $member->phone }}</div>
+                        <div class="text-xs text-gray-400">{{ $member->email }} · {{ $member->fullPhone() }}</div>
                     </td>
                     <td class="px-4 py-3 text-xs">{{ $member->hotel->name }}</td>
                     <td class="px-4 py-3 capitalize">{{ $member->membership_type }}</td>

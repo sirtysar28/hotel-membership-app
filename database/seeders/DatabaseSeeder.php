@@ -83,24 +83,25 @@ class DatabaseSeeder extends Seeder
         }
         $typeId = fn (string $code) => \App\Models\VoucherType::where('code', $code)->value('id');
 
-        // Paket Diamond (paid) — total 12 voucer
+        // Paket Diamond (paid) — total 12 voucer (komposisi contoh CPC v2.0 §21, tetap configurable)
         $diamondPackage = \App\Models\VoucherPackage::create([
             'name' => 'Paket Diamond 12 Voucer', 'applies_to' => 'paid', 'is_default' => true, 'is_active' => true,
         ]);
         foreach ([
-            ['breakfast', 6], ['cl', 2], ['gym', 2], ['room_upgrade', 1], ['swimming_pool', 1],
+            ['breakfast', 2], ['cl', 1], ['gym', 2], ['room_upgrade', 3], ['swimming_pool', 2], ['room', 2],
         ] as [$code, $qty]) {
             \App\Models\VoucherPackageItem::create([
                 'voucher_package_id' => $diamondPackage->id, 'voucher_type_id' => $typeId($code), 'qty' => $qty,
             ]);
         }
 
-        // Paket registrasi gratis — voucer selamat datang
+        // Paket registrasi gratis — juga 12 voucer (update #17: setiap pendaftaran
+        // paid MAUPUN free menerima 12 voucer yang bisa di-redeem)
         $freePackage = \App\Models\VoucherPackage::create([
-            'name' => 'Paket Registrasi Free', 'applies_to' => 'free', 'is_default' => true, 'is_active' => true,
+            'name' => 'Paket Registrasi Free 12 Voucer', 'applies_to' => 'free', 'is_default' => true, 'is_active' => true,
         ]);
         foreach ([
-            ['breakfast', 1], ['gym', 1],
+            ['breakfast', 2], ['cl', 1], ['gym', 2], ['room_upgrade', 3], ['swimming_pool', 2], ['room', 2],
         ] as [$code, $qty]) {
             \App\Models\VoucherPackageItem::create([
                 'voucher_package_id' => $freePackage->id, 'voucher_type_id' => $typeId($code), 'qty' => $qty,

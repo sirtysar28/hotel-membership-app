@@ -119,6 +119,9 @@ Route::middleware(['auth', 'role:super_admin,hotel_admin,membership_admin,financ
             ->middleware('role:super_admin,hotel_admin,manager');
         Route::post('/redemptions/{redemption}/reject', [Admin\VoucherController::class, 'reject'])->name('admin.redemptions.reject')
             ->middleware('role:super_admin,hotel_admin,manager');
+        // CPC §13 — slip cetak/keluaran voucer setelah persetujuan
+        Route::get('/redemptions/{redemption}/slip', [Admin\VoucherController::class, 'slip'])->name('admin.redemptions.slip')
+            ->middleware('role:super_admin,hotel_admin,manager,membership_admin');
 
         // Payments & finance
         Route::get('/payments', [Admin\PaymentController::class, 'index'])->name('admin.payments.index')
@@ -142,6 +145,11 @@ Route::middleware(['auth', 'role:super_admin,hotel_admin,membership_admin,financ
 
         // Users (super admin only)
         Route::resource('users', Admin\UserController::class)->except(['show'])->names('admin.users')
+            ->middleware('role:super_admin');
+        // Update #18 — approval akun staff/manager
+        Route::post('/users/{user}/approve', [Admin\UserController::class, 'approve'])->name('admin.users.approve')
+            ->middleware('role:super_admin');
+        Route::post('/users/{user}/reject', [Admin\UserController::class, 'reject'])->name('admin.users.reject')
             ->middleware('role:super_admin');
 
         // Logs (read-only)

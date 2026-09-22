@@ -25,7 +25,10 @@
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700">Mobile Phone *</label>
-            <input name="phone" value="{{ old('phone') }}" required class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5">
+            <div class="mt-1 flex gap-2">
+                @include('admin.members._country-code', ['value' => old('phone_country_code', '+62')])
+                <input name="phone" value="{{ old('phone') }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5">
+            </div>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
@@ -63,6 +66,10 @@
         <div>
             <label class="block text-sm font-medium text-gray-700">Occupation</label>
             <input name="occupation" value="{{ old('occupation') }}" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5">
+        </div>
+        <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">No. Referensi Bukti Fisik (Accounting)</label>
+            <input name="proof_reference" value="{{ old('proof_reference') }}" maxlength="80" placeholder="mis. BUKTI-ACC-00123" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700">Hotel *</label>

@@ -54,7 +54,15 @@ php artisan serve
 23. **Alur penukaran voucer dua tingkat** — staf mengajukan (cari by ID Voucer/member → PENDING_APPROVAL) → **manajer menyetujui** (REDEEMED + email notifikasi ke member) / **menolak dengan alasan wajib** (voucer kembali AVAILABLE, riwayat penolakan terjaga). Staf/pengaju tidak dapat menyetujui sendiri; antrean approval ada badge jumlah pending di sidebar admin.
 24. **Periode keanggotaan (multi-periode)** — setiap aktivasi/perpanjangan membuat baris `membership_periods` (contoh #1: 22 Sep 2026 – 21 Sep 2027); riwayat periode + harga tampil di detail member admin. Diamond tidak diperpanjang → otomatis expired → konversi Signature (§7); tier gratis turun satu level setelah 12 bulan tanpa aktivitas (§8).
 25. **OTP verifikasi email saat registrasi** (anti-spambot) — kode 6 digit berlaku 10 menit, maks 5 percobaan, resend dibatasi 60 detik; form registrasi memblokir submit sebelum email terverifikasi dan server memverifikasi ulang saat submit.
-26. **Notifikasi keamanan** — email security alert ke member saat aktivitas penting (registrasi/aktivasi membership).
+26. **Notifikasi keamanan** — email security alert ke member saat registrasi paid, aktivasi membership, dan aktivitas penting lainnya.
+27. **Filter dashboard (update #3/#7/#14)** — filter unit (Jakarta/Semarang) + periode (hari ini / 7 hari / bulan ini / pilih bulan / rentang kustom); berlaku pada KPI, revenue, chart, dan member terbaru.
+28. **No HP internasional (update #8/#19)** — dropdown kode negara (+62 ID s/d +1 US) di form registrasi & form member admin; nomor tampil lengkap dengan kode negara.
+29. **Field bukti fisik accounting (update #10)** — input "No. Referensi Bukti Fisik" saat registrasi & edit member, tampil di detail member.
+30. **12 voucer untuk SEMUA pendaftaran (update #17)** — paket free & Diamond masing-masing 12 voucer (komposisi contoh §21: Sarapan×2, CL×1, Gym×2, Room Upgrade×3, Pool×2, Room×2), tetap configurable via Voucher Master.
+31. **Slip cetak voucer (§13)** — setelah persetujuan manajer tersedia tombol "🖨 Cetak Slip" dengan keluaran siap cetak/PDF (ID Anggota, ID Voucer, jenis, hotel/outlet, staf pengaju, manajer persetuju, waktu) + audit trail akses slip.
+32. **Approval akun staff/manager (update #18)** — user baru role Staff/Manager dibuat *pending*, login diblokir sampai disetujui Super Admin (badge + tombol Setujui/Tolak di halaman Users, email notifikasi saat disetujui).
+33. **Preset laporan per tanggal/bulan (update #15)** — dropdown Periode (Hari Ini/Kemarin/7 Hari/30 Hari/Bulan Ini/Per Bulan/Rentang) di semua laporan, ikut diterapkan pada export CSV & PDF.
+34. **Status voucer lengkap (§11)** — vocabulary AVAILABLE / PENDING_APPROVAL / APPROVED / REDEEMED / REJECTED / EXPIRED / CANCELLED (keputusan APPROVED/REJECTED tercatat pada RedemptionRequest + voucer final REDEEMED / kembali AVAILABLE).
 
 ## Struktur Penting
 

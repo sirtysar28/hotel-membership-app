@@ -38,10 +38,70 @@ class UserController extends Controller
             'hotel_id' => ['nullable', 'exists:hotels,id'],
         ]);
 
-        $user = User::create($validated);
-        AuditLog::record('user_created', 'User', $user->id, "User dibuat: {$user->email} ({$user->role})");
+        // Update #18 — akun staf & manajer BUTUH APPROVAL sebelum dapat login;
+        // dibuat oleh super admin lalu disetujui super admin/manajer berwenang.
+        $needsApproval = in_array($validated['role'], User::APPROVAL_REQUIRED_ROLES, true);
+        $validated['approval_status'] = $needsApproval ? 'pending' : 'approved';
 
-        return redirect()->route('admin.users.index')->with('success', 'User berhasil dibuat.');
+        $user = User::create($validated);
+
+        AuditLog::record('user_created', 'User', $user->id,
+            "User dibuat: {$user->email} ({$user->role})" . ($needsApproval ? ' — menunggu approval' : ''));
+
+        return redirect()->route('admin.users.index')
+            ->with('success', $needsApproval
+                ? 'User berhasil dibuat dan MENUNGGU APPROVAL — login diblokir sampai disetujui.'
+                : 'User berhasil dibuat.');
+    }
+
+    /** Update #18 — setujui akun staff/manager yang menunggu approval. */
+    public function approve(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === $request->user()->id) {
+            return back()->with('error', 'Tidak dapat menyetujui akun sendiri.');
+        }
+
+        if ($user->approval_status !== 'pending') {
+            return back()->with('error', 'Akun ini tidak berstatus menunggu approval.');
+        }
+
+        $user->update([
+            'approval_status' => 'approved',
+            'approved_by' => $request->user()->id,
+            'approved_at' => now(),
+            'is_active' => true,
+        ]);
+
+        AuditLog::record('user_approved', 'User', $user->id,
+            "Akun {$user->email} ({$user->role}) DISETUJUI oleh " . $request->user()->email);
+        app(\App\Services\EmailService::class)->sendAccountApproved($user, $request->user());
+
+        return back()->with('success', "Akun {$user->email} disetujui — kini dapat login.");
+    }
+
+    /** Update #18 — tolak akun yang menunggu approval (login tetap diblokir). */
+    public function reject(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:300'],
+        ]);
+
+        if ($user->approval_status !== 'pending') {
+            return back()->with('error', 'Akun ini tidak berstatus menunggu approval.');
+        }
+
+        $user->update([
+            'approval_status' => 'rejected',
+            'approved_by' => $request->user()->id,
+            'approved_at' => now(),
+            'is_active' => false,
+        ]);
+
+        AuditLog::record('user_rejected', 'User', $user->id,
+            "Akun {$user->email} ({$user->role}) DITOLAK oleh " . $request->user()->email
+            . '. Alasan: ' . ($validated['reason'] ?? '-'));
+
+        return back()->with('success', "Akun {$user->email} ditolak — login diblokir.");
     }
 
     public function edit(User $user): View

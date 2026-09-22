@@ -11,7 +11,7 @@
                 <div>
                     <div class="text-xs text-gray-400 font-mono">{{ $member->member_no }}</div>
                     <h2 class="text-xl font-bold text-brand-800">{{ $member->full_name }}</h2>
-                    <div class="text-sm text-gray-500">{{ $member->email }} · {{ $member->phone }}</div>
+                    <div class="text-sm text-gray-500">{{ $member->email }} · {{ $member->fullPhone() }}</div>
                 </div>
                 <div class="text-right space-y-1">
                     {!! status_badge($member->status) !!}

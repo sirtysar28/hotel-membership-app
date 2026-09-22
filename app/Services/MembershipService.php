@@ -72,6 +72,8 @@ class MembershipService
 
             if ($isPaid) {
                 $this->createPaymentPipeline($member);
+                // Update #9 — security notification ke email member saat pendaftaran paid
+                app(EmailService::class)->sendSecurityAlert($member, 'registration_received');
                 \App\Models\AuditLog::record('member_registered_paid', 'Member', $member->id,
                     "Registrasi DIAMOND (menunggu pembayaran): {$member->member_no} - {$member->full_name}");
             } else {

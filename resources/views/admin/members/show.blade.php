@@ -11,7 +11,7 @@
                 <div>
                     <div class="text-xs text-gray-400 font-mono">{{ $member->member_no }}</div>
                     <h2 class="text-xl font-bold text-brand-800">{{ $member->full_name }}</h2>
-                    <div class="text-sm text-gray-500">{{ $member->email }} · {{ $member->phone }}</div>
+                    <div class="text-sm text-gray-500">{{ $member->email }} · {{ $member->fullPhone() }}</div>
                 </div>
                 <div class="flex flex-col items-end gap-2">
                     {!! status_badge($member->status) !!}
@@ -32,6 +32,7 @@
                 <div class="flex justify-between"><span class="text-gray-500">ID</span><span>{{ strtoupper($member->id_type ?? '') }} {{ $member->id_number ?? '-' }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Company</span><span>{{ $member->company ?? '-' }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Occupation</span><span>{{ $member->occupation ?? '-' }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Bukti Fisik (Acc.)</span><span>{{ $member->proof_reference ?? '-' }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Address</span><span class="text-right max-w-[220px]">{{ $member->address ?? '-' }}</span></div>
             </div>
 

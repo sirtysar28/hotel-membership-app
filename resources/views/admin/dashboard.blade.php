@@ -21,6 +21,53 @@
     </div>
 </div>
 
+{{-- ===== Filter Dashboard (update #3/#7/#14: unit + tanggal) ===== --}}
+<div class="bg-white rounded-2xl shadow p-4 mt-4">
+    <form method="GET" id="dashboard-filter" class="flex flex-wrap items-end gap-3 text-sm">
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Unit / Hotel</label>
+            <select name="hotel_id" class="border border-gray-300 rounded-lg px-3 py-2 bg-white min-w-[190px]">
+                <option value="">Semua Unit</option>
+                @foreach($hotels as $hotel)
+                    <option value="{{ $hotel->id }}" @selected(($filters['hotel_id'] ?? '') == $hotel->id)>{{ $hotel->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Periode</label>
+            <select name="preset" id="df-preset" class="border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                <option value="semua" @selected(($filters['preset'] ?? 'semua') === 'semua')>Semua Waktu</option>
+                <option value="hari_ini" @selected(($filters['preset'] ?? '') === 'hari_ini')>Hari Ini</option>
+                <option value="7_hari" @selected(($filters['preset'] ?? '') === '7_hari')>7 Hari Terakhir</option>
+                <option value="bulan_ini" @selected(($filters['preset'] ?? '') === 'bulan_ini')>Bulan Ini</option>
+                <option value="bulan" @selected(($filters['preset'] ?? '') === 'bulan')>Per Bulan…</option>
+                <option value="rentang" @selected(($filters['preset'] ?? '') === 'rentang')>Rentang Tanggal…</option>
+            </select>
+        </div>
+        <div id="df-month" class="{{ ($filters['preset'] ?? '') === 'bulan' ? '' : 'hidden' }}">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Bulan</label>
+            <input type="month" name="month" value="{{ $filters['month'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2 bg-white">
+        </div>
+        <div id="df-range" class="flex gap-2 {{ ($filters['preset'] ?? '') === 'rentang' ? '' : 'hidden' }}">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Dari</label>
+                <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Sampai</label>
+                <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+        </div>
+        <button class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-semibold">Terapkan</button>
+        @if($filterActive)
+            <a href="{{ route('admin.dashboard') }}" class="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg">Reset</a>
+        @endif
+        @if($filters['from'] && $filters['to'])
+            <span class="text-xs text-gray-400 self-center">Data: {{ \Illuminate\Support\Carbon::parse($filters['from'])->translatedFormat('d M Y') }} – {{ \Illuminate\Support\Carbon::parse($filters['to'])->translatedFormat('d M Y') }}</span>
+        @endif
+    </form>
+</div>
+
 {{-- ===== KPI Cards ===== --}}
 <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mt-4">
     <div class="bg-white rounded-2xl shadow p-4 sm:p-5 relative overflow-hidden group">
@@ -29,7 +76,7 @@
             <div>
                 <div class="text-[11px] uppercase tracking-wider text-gray-500">Total Members</div>
                 <div class="text-2xl sm:text-3xl font-bold text-brand-800 mt-1">{{ number_format($totalMembers) }}</div>
-                <div class="text-xs text-emerald-600 font-medium mt-1">{{ number_format($activeMembers) }} aktif</div>
+                <div class="text-xs text-emerald-600 font-medium mt-1">{{ number_format($activeMembers) }} aktif{{ $filters['from'] && $filters['to'] ? ' · ' . number_format($newMembers) . ' baru di rentang' : '' }}</div>
             </div>
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center shadow shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-6.93M16 3.13a4 4 0 010 7.75"/></svg>
@@ -414,6 +461,17 @@
         });
     }
 })();
+
+// ===== Toggle input filter berdasarkan preset (update #3/#14) =====
+const dfPreset = document.getElementById('df-preset');
+if (dfPreset) {
+    const dfMonth = document.getElementById('df-month');
+    const dfRange = document.getElementById('df-range');
+    dfPreset.addEventListener('change', () => {
+        dfMonth.classList.toggle('hidden', dfPreset.value !== 'bulan');
+        dfRange.classList.toggle('hidden', dfPreset.value !== 'rentang');
+    });
+}
 </script>
 @endpush
 @endsection

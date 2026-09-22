@@ -55,6 +55,21 @@ class AuthController extends Controller
             return redirect()->route('login')->withErrors(['email' => 'Akun Anda tidak aktif.']);
         }
 
+        // Update #18 — akun staff/manager harus disetujui lebih dulu oleh super admin
+        if ($user->approval_status === 'pending') {
+            Auth::logout();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Akun Anda masih MENUNGGU PERSETUJUAN admin. Silakan hubungi Super Admin.']);
+        }
+
+        if ($user->approval_status === 'rejected') {
+            Auth::logout();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Pendaftaran akun Anda DITOLAK. Silakan hubungi Super Admin.']);
+        }
+
         AuditLog::record('login', 'User', $user->id, "Login: {$user->email}");
 
         if ($user->isMember()) {
