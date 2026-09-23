@@ -114,7 +114,12 @@
                                 <td class="px-3 py-2">
                                     <a href="{{ route('staff.vouchers', ['q' => $v->voucher_no]) }}" class="font-mono text-xs font-semibold text-brand-700 hover:underline">{{ $v->voucher_no }}</a>
                                 </td>
-                                <td class="px-3 py-2">{{ $v->type->name }}</td>
+                                <td class="px-3 py-2">
+                                    {{ $v->type->name }}
+                                    @if($v->discount_percent)
+                                        <div class="text-[11px] font-semibold text-emerald-700">{{ $v->discountLabel() }}</div>
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2">{{ $v->expires_at?->format('d M Y') ?? '-' }}</td>
                                 <td class="px-3 py-2">{!! status_badge($v->status) !!}</td>
                             </tr>

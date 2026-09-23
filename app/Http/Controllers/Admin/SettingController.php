@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Setting;
 use App\Services\EmailService;
+use App\Support\Brand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -20,15 +21,49 @@ class SettingController extends Controller
         return view('admin.settings.index', ['settings' => $settings]);
     }
 
+    /**
+     * Setiap card di halaman Settings mengirim field `section` sendiri,
+     * sehingga hanya bagian itu yang divalidasi & disimpan — misal ganti
+     * logo tidak akan kena validasi SMTP, dan sebaliknya.
+     */
     public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            // General
+        return match ($request->input('section')) {
+            'branding' => $this->updateBranding($request),
+            'smtp' => $this->updateSmtp($request),
+            default => $this->updateGeneral($request),
+        };
+    }
+
+    /**
+     * Section: General (harga, prefix, masa berlaku).
+     */
+    private function updateGeneral(Request $request): RedirectResponse
+    {
+        $validated = $request->validateWithBag('general', [
             'paid_membership_price' => ['required', 'numeric', 'min:0'],
             'member_no_prefix' => ['required', 'string', 'max:10'],
             'membership_validity_years' => ['required', 'integer', 'min:1'],
+        ]);
 
-            // SMTP / Email
+        foreach ($validated as $key => $value) {
+            Setting::set($key, $value);
+        }
+
+        AuditLog::record('settings_updated', 'Setting', null,
+            'Settings General diperbarui',
+            $validated,
+        );
+
+        return back()->with('success', 'Settings General berhasil disimpan.');
+    }
+
+    /**
+     * Section: SMTP / Email.
+     */
+    private function updateSmtp(Request $request): RedirectResponse
+    {
+        $validated = $request->validateWithBag('smtp', [
             'mail_mailer' => ['required', 'in:log,smtp'],
             'smtp_host' => ['nullable', 'string', 'max:255'],
             'smtp_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
@@ -46,15 +81,11 @@ class SettingController extends Controller
             'smtp_encryption.in' => 'Enkripsi harus none, tls, atau ssl.',
         ]);
 
-        $general = collect($validated)->only([
-            'paid_membership_price', 'member_no_prefix', 'membership_validity_years',
-        ])->all();
-
-        foreach ($general as $key => $value) {
-            Setting::set($key, $value);
+        // Aturan tambahan yang tidak bisa divalidasi deklaratif
+        if ($validated['mail_mailer'] === 'smtp' && empty($validated['smtp_host'])) {
+            return back()->with('error', 'Mailer SMTP dipilih — SMTP Host wajib diisi.')->withInput();
         }
 
-        // --- SMTP ---
         $smtpChanged = [];
 
         $smtpKeys = [
@@ -76,20 +107,67 @@ class SettingController extends Controller
             $smtpChanged[] = 'smtp_password';
         }
 
-        if ($validated['mail_mailer'] === 'smtp' && empty($validated['smtp_host'])) {
-            return back()->with('error', 'Mailer SMTP dipilih — SMTP Host wajib diisi.')->withInput();
-        }
-
         AuditLog::record('settings_updated', 'Setting', null,
-            'Settings diperbarui' . ($smtpChanged ? ' (termasuk SMTP: ' . implode(', ', $smtpChanged) . ')' : ''),
-            $general,
+            'Settings SMTP diperbarui' . ($smtpChanged ? ' (' . implode(', ', $smtpChanged) . ')' : ''),
         );
 
         $note = $validated['mail_mailer'] === 'smtp'
             ? ' Email notifikasi akan dikirim via SMTP.'
             : ' Email hanya dicatat di log (MAIL_MAILER=log).';
 
-        return back()->with('success', 'Settings berhasil disimpan.' . $note);
+        return back()->with('success', 'Pengaturan SMTP berhasil disimpan.' . $note);
+    }
+
+    /**
+     * Section: Branding (logo login/landing/admin & favicon).
+     * Tidak menyentuh field General/SMTP sama sekali.
+     */
+    private function updateBranding(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('branding', [
+            'logo_login' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
+            'logo_landing' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
+            'logo_admin' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
+            'favicon' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg,ico', 'max:1024'],
+            'remove_logo_login' => ['nullable', 'boolean'],
+            'remove_logo_landing' => ['nullable', 'boolean'],
+            'remove_logo_admin' => ['nullable', 'boolean'],
+            'remove_favicon' => ['nullable', 'boolean'],
+        ], [
+            'logo_login.mimes' => 'Logo login harus berupa file PNG, JPG, WEBP, atau SVG.',
+            'logo_landing.mimes' => 'Logo landing harus berupa file PNG, JPG, WEBP, atau SVG.',
+            'logo_admin.mimes' => 'Logo admin harus berupa file PNG, JPG, WEBP, atau SVG.',
+            'favicon.mimes' => 'Favicon harus berupa file ICO, PNG, JPG, WEBP, atau SVG.',
+            'logo_login.max' => 'Ukuran logo login maksimal 2 MB.',
+            'logo_landing.max' => 'Ukuran logo landing maksimal 2 MB.',
+            'logo_admin.max' => 'Ukuran logo admin maksimal 2 MB.',
+            'favicon.max' => 'Ukuran favicon maksimal 1 MB.',
+        ]);
+
+        $changed = [];
+
+        foreach (Brand::MANAGED_KEYS as $key) {
+            if ($request->boolean('remove_' . $key)) {
+                Brand::remove($key);
+                $changed[] = $key . ' (kembali ke default)';
+                continue;
+            }
+
+            if ($request->hasFile($key)) {
+                Brand::store($key, $request->file($key));
+                $changed[] = $key;
+            }
+        }
+
+        if (empty($changed)) {
+            return back()->with('error', 'Tidak ada perubahan branding — pilih file logo/favicon terlebih dahulu.');
+        }
+
+        AuditLog::record('settings_updated', 'Setting', null,
+            'Settings Branding diperbarui (' . implode(', ', $changed) . ')',
+        );
+
+        return back()->with('success', 'Branding berhasil disimpan (' . implode(', ', $changed) . '). Refresh browser (Ctrl/Cmd+Shift+R) jika tampilan belum berubah.');
     }
 
     /**

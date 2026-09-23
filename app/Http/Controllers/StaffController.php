@@ -165,6 +165,14 @@ class StaffController extends Controller
         $message = "Transaksi {$result['transaction']->transaction_no} tersimpan. "
             . 'Total: ' . $member->refresh()->total_visits . ' visit / Rp' . number_format($member->total_spending, 0, ',', '.');
 
+        // Voucer diskon otomatis dari benefit level (mis. F&B 5% utk Classic)
+        if ($voucher = $result['discount_voucher'] ?? null) {
+            $message .= ' 🎟 Voucer diskon ' . $voucher->voucher_no . ' ('
+                . rtrim(rtrim(number_format((float) $voucher->discount_percent, 2, ',', ''), '0'), ',')
+                . '% = Rp' . number_format((float) $voucher->discount_amount, 0, ',', '.')
+                . ') digenerate — menunggu approval manajer.';
+        }
+
         if ($result['upgraded_to']) {
             $message .= ' 🎉 Level naik ke ' . strtoupper($result['upgraded_to']->name) . '!';
         }

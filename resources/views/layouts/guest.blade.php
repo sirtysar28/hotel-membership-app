@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Hotel Ciputra Membership')</title>
+    <title>@yield('title', 'Ciputra Premiere Club (CPC)')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,9 +24,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 font-semibold text-lg tracking-wide">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo Hotel Ciputra Membership" class="w-9 h-9 rounded-xl shadow ring-1 ring-white/20">
-                    <span class="hidden sm:inline">Hotel Ciputra <span class="text-amber-300">Membership</span></span>
-                    <span class="sm:hidden">HC <span class="text-amber-300">Membership</span></span>
+                    <img src="{{ \App\Support\Brand::logo('landing') }}" alt="Logo Ciputra Premiere Club (CPC)" class="w-9 h-9 rounded-xl shadow ring-1 ring-white/20 object-cover">
+                    <span class="hidden sm:inline tracking-wider">CIPUTRA PREMIERE <span class="text-amber-300">CLUB</span></span>
+                    <span class="sm:hidden tracking-wider">C<span class="text-amber-300">PC</span></span>
                 </a>
                 <div class="flex items-center gap-3">
                     <a href="{{ route('home') }}" class="hover:text-amber-300 text-sm">Home</a>
@@ -62,7 +62,7 @@
 
     <footer class="bg-brand-900 text-brand-100 text-sm mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div>&copy; {{ date('Y') }} Hotel Ciputra Membership &mdash; Jakarta &amp; Semarang. All rights reserved.</div>
+            <div>&copy; {{ date('Y') }} Ciputra Premiere Club (CPC) &mdash; Jakarta &amp; Semarang. All rights reserved.</div>
             <div class="text-xs">Developed by <a href="https://trijayasolution.com" target="_blank" rel="noopener" class="text-amber-300 hover:text-amber-200 hover:underline font-semibold">Trijaya Solution</a></div>
         </div>
     </footer>

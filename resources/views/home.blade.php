@@ -1,5 +1,5 @@
 @extends('layouts.guest')
-@section('title', 'Home')
+@section('title', 'Ciputra Premiere Club (CPC) — Sistem Keanggotaan Eksklusif Hotel Ciputra')
 
 @push('styles')
 <style>
@@ -90,8 +90,8 @@
                 Jakarta &amp; Semarang
             </div>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight reveal" style="transition-delay:.1s">
-                Hotel Ciputra<br>
-                <span class="text-shimmer">Membership</span>
+                CIPUTRA PREMIERE<br>
+                <span class="text-shimmer">CLUB (CPC)</span>
             </h1>
             <p class="mt-6 text-brand-100/90 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 reveal" style="transition-delay:.2s">
                 Dua jalur keanggotaan: <strong class="text-amber-300">Paid Membership</strong> ({{ format_idr($price) }}) dan

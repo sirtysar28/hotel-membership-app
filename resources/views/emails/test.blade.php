@@ -2,7 +2,7 @@
 
 @section('title', 'SMTP Test Email — Berhasil!')
 @section('eyebrow', 'Pengaturan SMTP')
-@section('preheader', 'Ini adalah email percobaan dari pengaturan SMTP Hotel Ciputra Membership.')
+@section('preheader', 'Ini adalah email percobaan dari pengaturan SMTP Ciputra Premiere Club (CPC).')
 @section('accent', '#047857')
 
 @section('content')

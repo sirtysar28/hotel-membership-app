@@ -40,6 +40,9 @@
                     <td class="px-4 py-3">
                         <div class="font-mono text-xs font-semibold text-brand-800">{{ $req->voucher_no }}</div>
                         <div class="text-[11px] text-gray-400">{{ $req->voucher?->type?->name ?? $req->type?->name ?? '-' }}</div>
+                        @if($req->voucher?->discount_percent)
+                            <div class="text-[11px] font-semibold text-emerald-700">{{ $req->voucher->discountLabel() }}</div>
+                        @endif
                     </td>
                     <td class="px-4 py-3">
                         <div class="font-medium">{{ $req->member->full_name }}</div>

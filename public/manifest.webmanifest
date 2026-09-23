@@ -1,7 +1,7 @@
 {
-    "name": "Hotel Ciputra Membership",
-    "short_name": "HC Membership",
-    "description": "Sistem manajemen membership Hotel Ciputra — Jakarta & Semarang. Digital card, level otomatis, benefit eksklusif.",
+    "name": "Ciputra Premiere Club (CPC)",
+    "short_name": "CPC",
+    "description": "Ciputra Premiere Club (CPC) — sistem keanggotaan Hotel Ciputra Jakarta & Semarang. Digital card, level otomatis, benefit eksklusif.",
     "id": "/",
     "start_url": "/",
     "scope": "/",

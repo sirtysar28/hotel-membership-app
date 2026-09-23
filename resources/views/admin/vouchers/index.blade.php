@@ -62,7 +62,12 @@
                 @forelse($vouchers as $voucher)
                     <tr class="hover:bg-brand-50/40">
                         <td class="px-4 sm:px-6 py-3 font-mono text-xs font-semibold text-brand-800">{{ $voucher->voucher_no }}</td>
-                        <td class="px-4 py-3">{{ $voucher->type->name }}</td>
+                        <td class="px-4 py-3">
+                            {{ $voucher->type->name }}
+                            @if($voucher->discount_percent)
+                                <div class="text-[11px] font-semibold text-emerald-700">{{ $voucher->discountLabel() }}</div>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             @if(in_array(auth()->user()->role, ['super_admin', 'hotel_admin', 'membership_admin']))
                                 <a href="{{ route('admin.members.show', $voucher->member) }}" class="font-medium hover:underline">{{ $voucher->member->full_name }}</a>

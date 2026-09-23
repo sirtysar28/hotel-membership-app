@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Login') — Hotel Ciputra Membership</title>
+    <title>@yield('title', 'Login') — Ciputra Premiere Club (CPC)</title>
     @include('partials.pwa-head')
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -34,9 +34,9 @@
                 {{-- Strip emas --}}
                 <div class="h-1.5 bg-gradient-to-r from-gold-500 via-gold-400 to-gold-300"></div>
                 <div class="p-8">
-                    {{-- Logo tunggal: lockup transparan utk latar putih --}}
+                    {{-- Logo tunggal: lockup transparan utk latar putih (bisa diganti di Admin → Settings) --}}
                     <div class="flex justify-center mb-6">
-                        <img src="{{ asset('images/logo-header-light.png') }}" alt="Hotel Ciputra Membership" class="w-64 max-w-full">
+                        <img src="{{ \App\Support\Brand::logo('login') }}" alt="Ciputra Premiere Club (CPC)" class="w-64 max-w-full">
                     </div>
 
                     @if (session('status'))
@@ -63,7 +63,7 @@
 
     {{-- Footer --}}
     <footer class="relative text-center text-brand-100/80 text-xs px-4 pb-6 space-y-1">
-        <div>&copy; {{ date('Y') }} Hotel Ciputra Membership &mdash; Jakarta &amp; Semarang. All rights reserved.</div>
+        <div>&copy; {{ date('Y') }} Ciputra Premiere Club (CPC) &mdash; Jakarta &amp; Semarang. All rights reserved.</div>
         <div>
             Developed by
             <a href="https://trijayasolution.com" target="_blank" rel="noopener" class="text-gold-300 hover:text-gold-400 font-semibold hover:underline">Trijaya Solution</a>

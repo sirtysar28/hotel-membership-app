@@ -56,6 +56,9 @@
                         <td class="px-4 sm:px-6 py-3 font-mono text-xs font-semibold text-brand-800">{{ $voucher->voucher_no }}</td>
                         <td class="px-4 py-3">
                             <div class="font-medium">{{ $voucher->type->name }}</div>
+                            @if($voucher->discount_percent)
+                                <div class="text-[11px] font-semibold text-emerald-700">{{ $voucher->discountLabel() }}</div>
+                            @endif
                             @if($voucher->period)
                                 <div class="text-[11px] text-gray-400">Periode {{ $voucher->period->label() }}</div>
                             @endif

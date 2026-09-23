@@ -138,9 +138,11 @@ class RegistrationController extends Controller
     {
         $validated = $request->validate($this->rules(), $this->messages());
 
-        // Update #20 — verifikasi OTP email wajib sebelum registrasi (anti-spambot)
+        // Update #20 — verifikasi OTP email wajib sebelum registrasi (anti-spambot).
+        // ensureVerified(): OTP yang sudah diverifikasi via AJAX (consumed) diterima,
+        // tanpa harus konsumsi ulang — fix bug "OTP tidak sesuai" saat submit daftar.
         try {
-            $this->otp->verify($validated['email'], (string) $request->input('otp_code'));
+            $this->otp->ensureVerified($validated['email'], (string) $request->input('otp_code'));
         } catch (\DomainException $e) {
             return back()->withInput()->withErrors(['otp_code' => $e->getMessage()]);
         }

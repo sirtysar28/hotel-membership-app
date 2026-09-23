@@ -73,6 +73,33 @@ class OtpService
         return $otp;
     }
 
+    /**
+     * Pastikan email sudah terverifikasi OTP — dipakai saat submit registrasi.
+     *
+     * Menerima DUA kondisi:
+     * 1. OTP sudah diverifikasi via AJAX /register/otp/verify sebelumnya
+     *    (status consumed) dengan kode yang sama & masih dalam window TTL — jangan
+     *    konsumsi ulang (bug lama: verify kedua kali selalu gagal "OTP tidak sesuai").
+     * 2. Belum diverifikasi sama sekali → verifikasi (dan konsumsi) sekarang.
+     */
+    public function ensureVerified(string $email, string $code, string $purpose = 'registration'): void
+    {
+        $email = strtolower(trim($email));
+
+        $alreadyVerified = OtpCode::where('email', $email)
+            ->where('purpose', $purpose)
+            ->where('code', trim($code))
+            ->whereNotNull('consumed_at')
+            ->where('consumed_at', '>=', now()->subMinutes(self::TTL_MINUTES))
+            ->exists();
+
+        if ($alreadyVerified) {
+            return; // sudah terverifikasi via step verifikasi email — lanjut registrasi
+        }
+
+        $this->verify($email, $code, $purpose);
+    }
+
     /** Verifikasi tanpa konsumsi (pre-check sebelum submit form). */
     public function isValid(string $email, string $code, string $purpose = 'registration'): bool
     {

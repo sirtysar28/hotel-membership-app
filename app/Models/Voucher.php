@@ -32,7 +32,8 @@ class Voucher extends Model
 
     protected $fillable = [
         'voucher_no', 'member_id', 'voucher_type_id', 'voucher_package_id',
-        'membership_period_id', 'source', 'status', 'issued_at', 'expires_at',
+        'membership_period_id', 'transaction_id', 'source', 'discount_percent',
+        'discount_amount', 'status', 'issued_at', 'expires_at',
         'redeemed_by', 'requested_by', 'hotel_id', 'outlet',
         'requested_at', 'redeemed_at', 'expired_marked_at', 'cancelled_at',
     ];
@@ -42,6 +43,8 @@ class Voucher extends Model
         return [
             'issued_at' => 'datetime',
             'expires_at' => 'date',
+            'discount_percent' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'requested_at' => 'datetime',
             'redeemed_at' => 'datetime',
             'expired_marked_at' => 'datetime',
@@ -67,6 +70,24 @@ class Voucher extends Model
     public function period()
     {
         return $this->belongsTo(MembershipPeriod::class, 'membership_period_id');
+    }
+
+    /** Transaksi pemicu voucer diskon otomatis (F&B/room). */
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
+    }
+
+    /** Label nilai diskon, mis. "Disc 5% · Rp50.000" (voucer hasil transaksi). */
+    public function discountLabel(): ?string
+    {
+        if ($this->discount_percent === null) {
+            return null;
+        }
+
+        $percent = rtrim(rtrim(number_format((float) $this->discount_percent, 2, ',', ''), '0'), ',');
+
+        return 'Disc ' . $percent . '% · Rp' . number_format((float) $this->discount_amount, 0, ',', '.');
     }
 
     public function hotel()

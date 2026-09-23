@@ -77,6 +77,8 @@ class DatabaseSeeder extends Seeder
             ['code' => 'room_upgrade', 'name' => 'Voucer Room Upgrade', 'description' => 'Upgrade tipe kamar subjek ketersediaan', 'sort_order' => 4],
             ['code' => 'swimming_pool', 'name' => 'Voucer Swimming Pool', 'description' => 'Akses kolam renang 1x', 'sort_order' => 5],
             ['code' => 'room', 'name' => 'Complimentary Room Night', 'description' => '1 malam menginap gratis', 'sort_order' => 6],
+            ['code' => 'fnb_discount', 'name' => 'Voucer Diskon F&B', 'description' => 'Diskon otomatis dari transaksi restaurant / bar / banquet / F&B lain sesuai benefit level member', 'sort_order' => 7],
+            ['code' => 'room_discount', 'name' => 'Voucer Diskon Kamar', 'description' => 'Diskon otomatis dari transaksi hotel stay sesuai benefit level member', 'sort_order' => 8],
         ];
         foreach ($voucherTypes as $vt) {
             \App\Models\VoucherType::create([...$vt, 'is_active' => true]);

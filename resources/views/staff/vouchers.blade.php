@@ -26,6 +26,9 @@
                     <div class="text-xs text-gray-400">ID Voucer</div>
                     <div class="font-mono font-bold text-brand-800 text-lg">{{ $voucher->voucher_no }}</div>
                     <div class="text-sm text-gray-600 mt-1">{{ $voucher->type->name }}</div>
+                    @if($voucher->discount_percent)
+                        <div class="text-sm font-semibold text-emerald-700 mt-0.5">{{ $voucher->discountLabel() }}</div>
+                    @endif
                 </div>
                 <div class="text-right">
                     {!! status_badge($voucher->status) !!}
@@ -119,7 +122,7 @@
                                     <a href="{{ route('staff.vouchers', ['q' => $v->voucher_no]) }}"
                                        class="inline-flex flex-col border border-gray-200 hover:border-brand-400 hover:bg-brand-50 rounded-lg px-3 py-2 transition">
                                         <span class="font-mono text-xs font-semibold text-brand-800">{{ $v->voucher_no }}</span>
-                                        <span class="text-[11px] text-gray-500">{{ $v->type->name }} · s/d {{ $v->expires_at?->format('d M Y') ?? '-' }}</span>
+                                        <span class="text-[11px] text-gray-500">{{ $v->type->name }}@if($v->discount_percent) · <span class="font-semibold text-emerald-700">{{ $v->discountLabel() }}</span>@endif · s/d {{ $v->expires_at?->format('d M Y') ?? '-' }}</span>
                                     </a>
                                 @endforeach
                             </div>

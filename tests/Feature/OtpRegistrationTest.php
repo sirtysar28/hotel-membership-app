@@ -155,6 +155,58 @@ class OtpRegistrationTest extends TestCase
         $this->assertNotNull($otp->refresh()->consumed_at);
     }
 
+    public function test_registrasi_setelah_verifikasi_ajax_berhasil(): void
+    {
+        // Regression: dulu verifikasi AJAX mengonsumsi OTP, lalu submit form
+        // memanggil verify() lagi → selalu error "OTP tidak ditemukan".
+        $this->seedBasics();
+        $hotel = Hotel::first();
+
+        $this->postJson(route('register.otp.send'), ['email' => 'ajaxflow@email.com']);
+        $otp = OtpCode::latest()->first();
+
+        // Step 1 — user verifikasi via AJAX (OTP terkonsumsi)
+        $verify = $this->postJson(route('register.otp.verify'), ['email' => 'ajaxflow@email.com', 'code' => $otp->code]);
+        $verify->assertOk()->assertJsonPath('status', 'verified');
+        $this->assertNotNull($otp->refresh()->consumed_at);
+
+        // Step 2 — klik "Daftar Membership" → HARUS berhasil (tidak error OTP lagi)
+        $response = $this->post(route('register.store'), [
+            'full_name' => 'Ajax Flow',
+            'email' => 'ajaxflow@email.com',
+            'phone' => '08133333333',
+            'hotel_id' => $hotel->id,
+            'membership_type' => 'free',
+            'otp_code' => $otp->code,
+        ]);
+
+        $response->assertRedirect(route('register.success', Member::where('email', 'ajaxflow@email.com')->value('member_no')));
+        $this->assertNotNull(Member::where('email', 'ajaxflow@email.com')->first());
+    }
+
+    public function test_registrasi_ditolak_jika_kode_otp_berbeda_dari_yang_terverifikasi(): void
+    {
+        $this->seedBasics();
+        $hotel = Hotel::first();
+
+        $this->postJson(route('register.otp.send'), ['email' => 'mismatch@email.com']);
+        $otp = OtpCode::latest()->first();
+        $this->postJson(route('register.otp.verify'), ['email' => 'mismatch@email.com', 'code' => $otp->code]);
+
+        // Submit dengan kode BERBEDA → tetap ditolak
+        $response = $this->from(route('register.create'))->post(route('register.store'), [
+            'full_name' => 'Kode Beda',
+            'email' => 'mismatch@email.com',
+            'phone' => '08134444444',
+            'hotel_id' => $hotel->id,
+            'membership_type' => 'free',
+            'otp_code' => '999999',
+        ]);
+
+        $response->assertSessionHasErrors('otp_code');
+        $this->assertEquals(0, Member::where('email', 'mismatch@email.com')->count());
+    }
+
     public function test_otp_kedaluwarsa_ditolak(): void
     {
         $this->seedBasics();

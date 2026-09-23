@@ -107,6 +107,142 @@ class VoucherService
 
     /*
     |----------------------------------------------------------------------
+    | Voucer diskon otomatis dari transaksi (F&B / resto / room)
+    |----------------------------------------------------------------------
+    */
+
+    /** Map jenis transaksi → kode jenis voucer + kategori benefit yang berlaku. */
+    public static function discountMapping(string $transactionType): ?array
+    {
+        return match ($transactionType) {
+            // F&B: restaurant, bar, banquet, other_fnb → benefit kategori fnb/discount
+            'restaurant', 'bar', 'banquet', 'other_fnb' => [
+                'voucher_type' => 'fnb_discount',
+                'categories' => ['fnb', 'discount'],
+            ],
+            // Menginap → benefit kategori room
+            'hotel_stay' => [
+                'voucher_type' => 'room_discount',
+                'categories' => ['room'],
+            ],
+            default => null, // 'other' tidak menghasilkan voucer diskon
+        };
+    }
+
+    /** Ambil persentase diskon dari nilai benefit (mis. "5%", "10 %"). */
+    public static function parsePercent(?string $value): ?float
+    {
+        if ($value === null || ! preg_match('/^\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*%\s*$/', trim($value), $m)) {
+            return null;
+        }
+
+        $percent = (float) str_replace(',', '.', $m[1]);
+
+        return ($percent > 0 && $percent <= 100) ? $percent : null;
+    }
+
+    /**
+     * Generate voucer diskon otomatis saat member bertransaksi.
+     *
+     * Contoh: member Classic transaksi di restaurant, benefit level Classic
+     * "Discount Restaurant 5%" → voucer diskon 5% × nilai transaksi diterbitkan
+     * dengan status PENDING_APPROVAL (menunggu persetujuan manajer).
+     *
+     * Benefit dicocokkan sesuai input transaksi (jenis transaksi), level member,
+     * dan hotel (benefit spesifik hotel mengungguli benefit umum).
+     */
+    public function issueTransactionDiscountVoucher(Member $member, \App\Models\Transaction $transaction, User $staff): ?Voucher
+    {
+        $mapping = self::discountMapping($transaction->type);
+
+        if ($mapping === null) {
+            return null;
+        }
+
+        // Cari benefit diskon aktif utk level member (spesifik hotel lebih prioritas,
+        // lalu persentase terbesar)
+        $candidates = \App\Models\MembershipBenefit::query()
+            ->where('is_active', true)
+            ->where('level_id', $member->level_id)
+            ->whereIn('category', $mapping['categories'])
+            ->where(function ($q) use ($member) {
+                $q->whereNull('hotel_id')->orWhere('hotel_id', $member->hotel_id);
+            })
+            ->get()
+            ->filter(fn ($b) => self::parsePercent($b->value) !== null);
+
+        $benefit = $candidates->filter(fn ($b) => $b->hotel_id !== null)
+            ->sortByDesc(fn ($b) => self::parsePercent($b->value))
+            ->first()
+            ?? $candidates->sortByDesc(fn ($b) => self::parsePercent($b->value))->first();
+
+        if ($benefit === null) {
+            return null; // level tidak punya benefit diskon utk jenis transaksi ini
+        }
+
+        $type = VoucherType::where('code', $mapping['voucher_type'])->where('is_active', true)->first();
+
+        if ($type === null) {
+            AuditLog::record('voucher_type_missing', 'Transaction', $transaction->id,
+                "Jenis voucer {$mapping['voucher_type']} tidak ditemukan — voucer diskon transaksi tidak diterbitkan");
+
+            return null;
+        }
+
+        $percent = self::parsePercent($benefit->value);
+        $amount = round(((float) $transaction->amount) * $percent / 100, 2);
+
+        return DB::transaction(function () use ($member, $transaction, $staff, $type, $benefit, $percent, $amount) {
+            $voucher = Voucher::create([
+                'voucher_no' => 'VCH-' . now()->format('y') . str_pad((string) $this->nextIssueSequence(), 4, '0', STR_PAD_LEFT) . '-0001',
+                'member_id' => $member->id,
+                'voucher_type_id' => $type->id,
+                'membership_period_id' => $member->periods()->where('status', 'active')->latest('period_no')->value('id'),
+                'transaction_id' => $transaction->id,
+                'source' => 'transaction',
+                'discount_percent' => $percent,
+                'discount_amount' => $amount,
+                'status' => Voucher::STATUS_PENDING_APPROVAL,
+                'issued_at' => now(),
+                'expires_at' => $member->valid_until, // ikut masa berlaku keanggotaan
+                'requested_by' => $staff->id,
+                'requested_at' => now(),
+                'hotel_id' => $transaction->hotel_id,
+                'outlet' => $transaction->outlet ?: $transaction->typeLabel(),
+            ]);
+
+            // Langsung masuk antrian approval manajer (spt pengajuan staff lainnya)
+            RedemptionRequest::create([
+                'voucher_id' => $voucher->id,
+                'member_id' => $member->id,
+                'voucher_type_id' => $type->id,
+                'voucher_no' => $voucher->voucher_no,
+                'requested_by' => $staff->id,
+                'hotel_id' => $transaction->hotel_id,
+                'outlet' => $voucher->outlet,
+                'status' => RedemptionRequest::PENDING,
+                'request_note' => 'Auto: transaksi ' . $transaction->transaction_no
+                    . ' (' . $transaction->typeLabel() . ' Rp' . number_format((float) $transaction->amount, 0, ',', '.') . ')'
+                    . ' — benefit "' . $benefit->name . '" level ' . $member->level->name,
+            ]);
+
+            AuditLog::record('transaction_voucher_issued', 'Voucher', $voucher->id,
+                "Voucer diskon {$voucher->voucher_no} ({$percent}% = Rp" . number_format($amount, 0, ',', '.') . ') digenerate otomatis dari transaksi '
+                . $transaction->transaction_no . ' member ' . $member->member_no . ' — MENUNGGU PERSETUJUAN', [
+                    'member_no' => $member->member_no,
+                    'level' => $member->level->name,
+                    'benefit' => $benefit->name,
+                    'transaction_no' => $transaction->transaction_no,
+                    'discount_percent' => $percent,
+                    'discount_amount' => $amount,
+                ]);
+
+            return $voucher;
+        });
+    }
+
+    /*
+    |----------------------------------------------------------------------
     | Alur penukaran (§10)
     |----------------------------------------------------------------------
     */

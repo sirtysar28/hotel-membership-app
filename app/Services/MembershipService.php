@@ -381,6 +381,12 @@ class MembershipService
 
             app(EmailService::class)->sendTransactionConfirmation($member, $transaction);
 
+            // Voucer diskon otomatis dari transaksi (mis. F&B → disc 5% utk level
+            // Classic sesuai benefit) — digenerate berdasar level saat transaksi,
+            // langsung masuk antrian approval manajer (PENDING_APPROVAL).
+            $discountVoucher = app(VoucherService::class)
+                ->issueTransactionDiscountVoucher($member, $transaction, $staff);
+
             $newLevel = app(LevelEngine::class)->processUpgrade($member);
 
             \App\Models\AuditLog::record('visit_redeemed', 'Transaction', $transaction->id,
@@ -390,6 +396,7 @@ class MembershipService
                 'transaction' => $transaction,
                 'visit' => $visit,
                 'upgraded_to' => $newLevel,
+                'discount_voucher' => $discountVoucher,
             ];
         });
 

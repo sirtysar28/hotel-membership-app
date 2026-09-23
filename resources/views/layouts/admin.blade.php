@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') — Hotel Ciputra Membership</title>
+    <title>@yield('title', 'Admin') — Ciputra Premiere Club (CPC)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -58,8 +58,8 @@
     <aside id="sidebar" class="fixed md:sticky top-0 left-0 z-40 h-full md:h-screen flex flex-col shrink-0 bg-brand-800 text-brand-100 shadow-xl">
         {{-- Brand --}}
         <div class="h-16 flex items-center px-4 border-b border-white/10 shrink-0">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo Hotel Ciputra Membership" class="w-9 h-9 rounded-xl shadow-lg shrink-0">
-            <span class="sidebar-brand-text font-semibold text-base text-white ml-3 whitespace-nowrap">Membership <span class="text-amber-300">Admin</span></span>
+            <img src="{{ \App\Support\Brand::logo('admin') }}" alt="Logo Hotel Ciputra Membership" class="w-9 h-9 rounded-xl shadow-lg shrink-0 object-cover">
+            <span class="sidebar-brand-text font-semibold text-base text-white ml-3 whitespace-nowrap">CPC <span class="text-amber-300">Admin</span></span>
             {{-- Close (mobile) --}}
             <button onclick="closeSidebar()" class="md:hidden ml-auto p-1.5 rounded-lg hover:bg-white/10 text-brand-200" aria-label="Tutup menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -73,7 +73,7 @@
 
         {{-- Footer sidebar --}}
         <div class="p-3 border-t border-white/10 shrink-0">
-            <p class="sidebar-footer-text text-xs text-brand-300">Hotel Ciputra Membership v1.0</p>
+            <p class="sidebar-footer-text text-xs text-brand-300">Ciputra Premiere Club v1.0</p>
             <p class="sidebar-footer-text text-[10px] text-brand-400/70 mt-0.5">
                 Developed by <a href="https://trijayasolution.com" target="_blank" rel="noopener" class="text-amber-300/90 hover:text-amber-300">Trijaya Solution</a>
             </p>
@@ -134,7 +134,7 @@
         </main>
 
         <footer class="text-center text-xs text-gray-400 px-4 py-4 border-t border-gray-200/70">
-            &copy; {{ date('Y') }} Hotel Ciputra Membership —
+            &copy; {{ date('Y') }} Ciputra Premiere Club (CPC) —
             Developed by <a href="https://trijayasolution.com" target="_blank" rel="noopener" class="text-brand-500 hover:underline font-medium">Trijaya Solution</a>
         </footer>
     </div>

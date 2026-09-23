@@ -1,6 +1,6 @@
 @extends('emails.layouts.master')
 
-@section('title', 'Welcome to Hotel Ciputra Membership!')
+@section('title', 'Welcome to Ciputra Premiere Club (CPC)!')
 @section('eyebrow', 'Membership Aktif')
 @section('preheader', 'Selamat datang! Membership Anda telah aktif. Berikut detail kartu membership Anda.')
 

@@ -2,11 +2,23 @@
 @section('title', 'Settings')
 @section('page-title', 'Settings')
 
+@use (\App\Support\Brand)
 @section('content')
 @php
     // Accessor aman: key yang belum ada di DB tidak memicu "Undefined array key"
     $get = fn ($key, $default = null) => $settings->get($key)?->value ?? $default;
     $has = fn ($key) => $settings->has($key);
+
+    // Error validasi per-card (error bag terpisah antar section form)
+    $bagErrors = fn (string $bag) => $errors->getBag($bag)->all();
+
+    // Meta field branding: [key, label, deskripsi, kelas preview]
+    $brandFields = [
+        ['key' => 'logo_login', 'label' => 'Logo Halaman Login', 'hint' => 'Lockup besar di kartu login. Disarankan PNG transparan, lebar ±600px.', 'preview' => 'max-h-16'],
+        ['key' => 'logo_landing', 'label' => 'Logo Landing Page', 'hint' => 'Ikon kecil di navbar halaman publik (kotak 9×9). Disarankan PNG/SVG persegi.', 'preview' => 'max-h-12'],
+        ['key' => 'logo_admin', 'label' => 'Logo Dashboard Admin', 'hint' => 'Ikon kecil di sidebar admin (kotak 9×9). Disarankan PNG/SVG persegi.', 'preview' => 'max-h-12'],
+        ['key' => 'favicon', 'label' => 'Favicon', 'hint' => 'Ikon tab browser. Disarankan ICO/PNG persegi 32×32 atau SVG.', 'preview' => 'max-h-10'],
+    ];
 @endphp
 <div class="max-w-2xl space-y-6">
 
@@ -22,15 +34,16 @@
     <div class="bg-white rounded-2xl shadow p-6 md:p-8">
         <h2 class="font-semibold text-brand-800 text-lg">General Settings</h2>
 
-        @if ($errors->any())
+        @if ($bagErrors('general'))
             <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mt-4">
-                @foreach ($errors->all() as $error)<div>• {{ $error }}</div>@endforeach
+                @foreach ($bagErrors('general') as $error)<div>• {{ $error }}</div>@endforeach
             </div>
         @endif
 
         <form method="POST" action="{{ route('admin.settings.update') }}" class="mt-6 space-y-4">
             @csrf
             @method('PUT')
+            <input type="hidden" name="section" value="general">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Harga Paid Membership (Rp) *</label>
                 <input type="number" name="paid_membership_price" min="0" step="1000" required
@@ -57,6 +70,64 @@
         </form>
     </div>
 
+    {{-- ================= BRANDING (LOGO & FAVICON) ================= --}}
+    <div class="bg-white rounded-2xl shadow p-6 md:p-8">
+        <h2 class="font-semibold text-brand-800 text-lg">Branding — Logo &amp; Favicon</h2>
+        <p class="text-sm text-gray-500 mt-1">
+            Ubah logo halaman <strong>Login</strong>, <strong>Landing Page</strong>, <strong>Dashboard Admin</strong>, dan <strong>Favicon</strong> (ikon tab browser).
+            Format: PNG / JPG / WEBP / SVG — favicon juga menerima ICO. Biarkan kosong jika tidak ingin mengubah.
+        </p>
+
+        @if ($bagErrors('branding'))
+            <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mt-4">
+                @foreach ($bagErrors('branding') as $error)<div>• {{ $error }}</div>@endforeach
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="section" value="branding">
+
+            @foreach ($brandFields as $field)
+                @php $isCustom = Brand::hasCustom($field['key']); @endphp
+                <div class="border border-gray-100 rounded-xl p-4">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <label class="block text-sm font-medium text-gray-700">{{ $field['label'] }}</label>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ $isCustom ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500' }}">
+                            {{ $isCustom ? 'Custom aktif' : 'Default bawaan' }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ $field['hint'] }}</p>
+
+                    <div class="mt-3 flex items-center gap-4 flex-wrap">
+                        {{-- Preview saat ini --}}
+                        <div class="w-40 h-20 border border-dashed border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                            <img id="preview-{{ $field['key'] }}" src="{{ Brand::url($field['key']) }}" alt="{{ $field['label'] }}" class="{{ $field['preview'] }} max-w-full object-contain">
+                        </div>
+                        <div class="flex-1 min-w-[220px] space-y-2">
+                            <input type="file" name="{{ $field['key'] }}" accept="{{ $field['key'] === 'favicon' ? 'image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,.ico' : 'image/png,image/jpeg,image/webp,image/svg+xml' }}"
+                                   onchange="previewBrandFile(this, 'preview-{{ $field['key'] }}', 'remove-{{ $field['key'] }}')"
+                                   class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-brand-50 file:text-brand-800 file:font-medium file:cursor-pointer cursor-pointer">
+                            @if ($isCustom)
+                                <label class="flex items-center gap-2 text-xs text-red-600 cursor-pointer select-none">
+                                    <input type="checkbox" id="remove-{{ $field['key'] }}" name="remove_{{ $field['key'] }}" value="1"
+                                           class="rounded border-gray-300 text-red-600 focus:ring-red-300"
+                                           onchange="this.closest('div.border').classList.toggle('opacity-60', this.checked)">
+                                    Hapus &amp; kembalikan ke default bawaan
+                                </label>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+
+            <div class="flex justify-end pt-2">
+                <button class="bg-brand-800 text-white font-semibold px-6 py-2.5 rounded-lg text-sm">Simpan Branding</button>
+            </div>
+        </form>
+    </div>
+
     {{-- ================= SMTP / EMAIL ================= --}}
     <div class="bg-white rounded-2xl shadow p-6 md:p-8">
         <div class="flex items-center justify-between flex-wrap gap-2">
@@ -71,19 +142,16 @@
             Mode <strong>log</strong> hanya mencatat email tanpa mengirim (untuk development).
         </p>
 
-        @if ($errors->any())
+        @if ($bagErrors('smtp'))
             <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mt-4">
-                @foreach ($errors->all() as $error)<div>• {{ $error }}</div>@endforeach
+                @foreach ($bagErrors('smtp') as $error)<div>• {{ $error }}</div>@endforeach
             </div>
         @endif
 
         <form method="POST" action="{{ route('admin.settings.update') }}" class="mt-6 space-y-4">
             @csrf
             @method('PUT')
-            {{-- General (wajib ikut dikirim) --}}
-            <input type="hidden" name="paid_membership_price" value="{{ $get('paid_membership_price', 2200000) }}">
-            <input type="hidden" name="member_no_prefix" value="{{ $get('member_no_prefix', 'HCM') }}">
-            <input type="hidden" name="membership_validity_years" value="{{ $get('membership_validity_years', 1) }}">
+            <input type="hidden" name="section" value="smtp">
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Mailer *</label>
@@ -144,7 +212,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">From Name</label>
-                    <input name="mail_from_name" placeholder="Hotel Ciputra Membership"
+                    <input name="mail_from_name" placeholder="Ciputra Premiere Club (CPC)"
                            value="{{ old('mail_from_name', $get('mail_from_name')) }}"
                            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5">
                 </div>
@@ -176,4 +244,25 @@
     </div>
 
 </div>
+@push('scripts')
+<script>
+    /* Preview file branding sebelum diupload */
+    function previewBrandFile(input, previewId, removeId) {
+        const preview = document.getElementById(previewId);
+        const removeBox = document.getElementById(removeId);
+        const [file] = input.files;
+
+        if (file && file.type.startsWith('image/')) {
+            preview.src = URL.createObjectURL(file);
+            preview.onload = () => URL.revokeObjectURL(preview.src);
+        }
+
+        // Pilih file baru = batalkan niat hapus/reset
+        if (removeBox) {
+            removeBox.checked = false;
+            removeBox.closest('div.border').classList.remove('opacity-60');
+        }
+    }
+</script>
+@endpush
 @endsection

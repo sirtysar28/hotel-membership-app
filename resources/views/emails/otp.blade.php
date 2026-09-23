@@ -6,7 +6,7 @@
 
 @section('content')
 <p>Dear <strong>{{ $email }}</strong>,</p>
-<p>Anda (atau seseorang yang menggunakan email ini) meminta kode OTP untuk menyelesaikan <strong>registrasi membership Hotel Ciputra</strong>. Gunakan kode berikut:</p>
+<p>Anda (atau seseorang yang menggunakan email ini) meminta kode OTP untuk menyelesaikan <strong>registrasi Ciputra Premiere Club (CPC)</strong>. Gunakan kode berikut:</p>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
     <tr>
@@ -21,4 +21,4 @@
 <p style="color:#6b7280; font-size:13px;">Jika Anda tidak merasa melakukan registrasi, abaikan email ini — tidak ada tindakan lebih lanjut yang diperlukan. Jangan bagikan kode OTP ini kepada siapa pun, termasuk pihak yang mengaku sebagai staf hotel.</p>
 @endsection
 
-@section('closing', 'Sampai jumpa di Hotel Ciputra!')
+@section('closing', 'Sampai jumpa di Ciputra Premiere Club!')
