@@ -80,6 +80,9 @@ class MemberController extends Controller
             'occupation' => ['nullable', 'string', 'max:150'],
             'hotel_id' => ['required', 'exists:hotels,id'],
             'membership_type' => ['required', 'in:paid,free'],
+            // FIX login member — admin dapat menyetel password awal akun portal (opsional;
+            // jika kosong, member dapat mengatur password via fitur "Lupa Password")
+            'portal_password' => ['nullable', 'string', 'min:8'],
         ]);
 
         $member = $this->membership->registerMember($validated);

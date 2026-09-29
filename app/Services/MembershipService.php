@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class MembershipService
@@ -69,6 +70,14 @@ class MembershipService
                 'last_activity_date' => now()->toDateString(),
                 'created_by' => auth()->id(),
             ]);
+
+            // FIX akses login member — akun portal dibuat LANGSUNG saat registrasi
+            // dengan password yang dipilih member sendiri di form registrasi, agar member
+            // bisa login ke portal (paid: memantau pembayaran; free: langsung aktif).
+            // PENTING: dipanggil SEBELUM activate() karena activate() juga membuat akun
+            // portal bila belum ada — dengan password acak yang tidak diketahui member
+            // (penyebab utama member tidak bisa login sebelumnya).
+            $this->ensurePortalUser($member, $data['portal_password'] ?? null);
 
             if ($isPaid) {
                 $this->createPaymentPipeline($member);
@@ -284,13 +293,21 @@ class MembershipService
     /** Akun portal untuk member (role: member) */
     public function ensurePortalUser(Member $member, ?string $password = null): User
     {
-        $password ??= Str::random(10);
+        $explicitPassword = $password;
 
         $user = User::where('member_id', $member->id)->first();
 
         if ($user) {
+            // FIX login member — bila password eksplisit diberikan (mis. saat registrasi /
+            // member dibuat admin), sinkronkan password akun portal agar member bisa login.
+            if ($explicitPassword !== null && ! Hash::check($explicitPassword, $user->password)) {
+                $user->update(['password' => $explicitPassword]);
+            }
+
             return $user;
         }
+
+        $password ??= Str::random(10);
 
         return User::create([
             'name' => $member->full_name,

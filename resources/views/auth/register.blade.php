@@ -125,6 +125,32 @@
                 </div>
             </fieldset>
 
+            {{-- Step 1b: Akun Portal (Login) --}}
+            <fieldset>
+                <legend class="text-sm font-semibold uppercase tracking-wider text-brand-700 border-b border-gray-100 w-full pb-2 mb-4">1b. Password Akun Portal (Login) *</legend>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password *</label>
+                        <div class="relative mt-1">
+                            <input type="password" name="portal_password" id="portal-password" required minlength="8" autocomplete="new-password"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-11 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            @include('partials.password-eye')
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Minimal 8 karakter. Dipakai untuk login ke Member Portal.</p>
+                        @error('portal_password')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Konfirmasi Password *</label>
+                        <div class="relative mt-1">
+                            <input type="password" name="portal_password_confirmation" id="portal-password-confirm" required minlength="8" autocomplete="new-password"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-11 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            @include('partials.password-eye')
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Ulangi password yang sama.</p>
+                    </div>
+                </div>
+            </fieldset>
+
             {{-- Step 2: Verifikasi Email (OTP) --}}
             <fieldset>
                 <legend class="text-sm font-semibold uppercase tracking-wider text-brand-700 border-b border-gray-100 w-full pb-2 mb-4">2. Verifikasi Email (OTP) *</legend>

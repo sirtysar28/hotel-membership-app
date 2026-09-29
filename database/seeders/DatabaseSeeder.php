@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
             ['code' => 'room_discount', 'name' => 'Voucer Diskon Kamar', 'description' => 'Diskon otomatis dari transaksi hotel stay sesuai benefit level member', 'sort_order' => 8],
         ];
         foreach ($voucherTypes as $vt) {
-            \App\Models\VoucherType::create([...$vt, 'is_active' => true]);
+            \App\Models\VoucherType::updateOrCreate(['code' => $vt['code']], [...$vt, 'is_active' => true]);
         }
         $typeId = fn (string $code) => \App\Models\VoucherType::where('code', $code)->value('id');
 

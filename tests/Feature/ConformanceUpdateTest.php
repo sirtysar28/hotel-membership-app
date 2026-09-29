@@ -160,6 +160,8 @@ class ConformanceUpdateTest extends TestCase
             'otp_code' => '123456',
             'hotel_id' => $this->hotel->id,
             'membership_type' => 'free',
+            'portal_password' => 'rahasia123',
+            'portal_password_confirmation' => 'rahasia123',
         ]);
 
         $response->assertRedirect();

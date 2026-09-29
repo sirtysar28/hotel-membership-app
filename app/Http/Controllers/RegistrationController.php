@@ -188,6 +188,8 @@ class RegistrationController extends Controller
             'phone_country_code' => ['nullable', 'string', 'max:8', 'regex:/^\+[0-9]{1,4}$/'],
             'proof_reference' => ['nullable', 'string', 'max:80'],
             'otp_code' => ['required', 'digits:6'],
+            // FIX login member — member membuat password portal sendiri saat registrasi
+            'portal_password' => ['required', 'string', 'min:8', 'confirmed'],
             'dob' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'in:male,female'],
             'address' => ['nullable', 'string', 'max:500'],
@@ -210,6 +212,9 @@ class RegistrationController extends Controller
             'phone_country_code.regex' => 'Kode negara harus berformat +62, +65, dst.',
             'otp_code.required' => 'Kode OTP wajib diisi — klik "Kirim Kode OTP" pada langkah verifikasi email.',
             'otp_code.digits' => 'Kode OTP harus 6 digit angka.',
+            'portal_password.required' => 'Password akun portal wajib diisi.',
+            'portal_password.min' => 'Password minimal 8 karakter.',
+            'portal_password.confirmed' => 'Konfirmasi password tidak sesuai.',
             'dob.before' => 'Tanggal lahir harus sebelum hari ini.',
             'hotel_id.required' => 'Pilih hotel.',
             'membership_type.required' => 'Pilih tipe membership.',

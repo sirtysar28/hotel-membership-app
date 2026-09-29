@@ -26,6 +26,15 @@
             @endif
         </div>
 
+        {{-- FIX login member — info kredensial portal --}}
+        <div class="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-left text-sm">
+            <div class="font-semibold text-emerald-800 flex items-center gap-2">🔑 Akun Member Portal Anda</div>
+            <div class="mt-2 space-y-1 text-gray-700">
+                <div>Email: <strong>{{ $member->email }}</strong> <span class="text-gray-400">(password yang Anda buat saat registrasi)</span></div>
+                <div class="text-xs text-gray-500">Gunakan tombol di bawah untuk login, melihat kartu digital, voucer, dan riwayat kunjungan Anda.</div>
+            </div>
+        </div>
+
         @if($member->status === 'active')
             <p class="text-xs text-gray-500 mt-4">Digital membership card &amp; welcome email telah dikirim ke <strong>{{ $member->email }}</strong>.</p>
         @else
@@ -33,7 +42,8 @@
         @endif
 
         <div class="mt-6 flex justify-center gap-3">
-            <a href="{{ route('home') }}" class="bg-brand-800 text-white px-5 py-2.5 rounded-lg text-sm font-semibold">Kembali ke Home</a>
+            <a href="{{ route('login') }}" class="bg-brand-800 hover:bg-brand-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold">Login Member Portal</a>
+            <a href="{{ route('home') }}" class="border border-gray-300 text-gray-600 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50">Kembali ke Home</a>
         </div>
     </div>
 </div>

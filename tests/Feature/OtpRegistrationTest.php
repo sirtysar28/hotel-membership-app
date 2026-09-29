@@ -113,6 +113,8 @@ class OtpRegistrationTest extends TestCase
             'hotel_id' => $hotel->id,
             'membership_type' => 'free',
             'otp_code' => '123456',
+            'portal_password' => 'rahasia123',
+            'portal_password_confirmation' => 'rahasia123',
         ];
 
         $response = $this->from(route('register.create'))->post(route('register.store'), $payload);
@@ -136,6 +138,8 @@ class OtpRegistrationTest extends TestCase
             'hotel_id' => $hotel->id,
             'membership_type' => 'free',
             'otp_code' => $otp->code,
+            'portal_password' => 'rahasia123',
+            'portal_password_confirmation' => 'rahasia123',
         ]);
 
         $response->assertRedirect();
@@ -178,6 +182,8 @@ class OtpRegistrationTest extends TestCase
             'hotel_id' => $hotel->id,
             'membership_type' => 'free',
             'otp_code' => $otp->code,
+            'portal_password' => 'rahasia123',
+            'portal_password_confirmation' => 'rahasia123',
         ]);
 
         $response->assertRedirect(route('register.success', Member::where('email', 'ajaxflow@email.com')->value('member_no')));
@@ -201,6 +207,8 @@ class OtpRegistrationTest extends TestCase
             'hotel_id' => $hotel->id,
             'membership_type' => 'free',
             'otp_code' => '999999',
+            'portal_password' => 'rahasia123',
+            'portal_password_confirmation' => 'rahasia123',
         ]);
 
         $response->assertSessionHasErrors('otp_code');

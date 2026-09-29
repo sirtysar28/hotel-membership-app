@@ -68,5 +68,16 @@
     </footer>
     @stack('scripts')
     @include('partials.pwa-register')
+    {{-- Tombol intip password (partials.password-eye) --}}
+    <script>
+        function togglePw(btn) {
+            const input = btn.parentElement.querySelector('input');
+            if (!input) return;
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.querySelector('.i-eye')?.classList.toggle('hidden', show);
+            btn.querySelector('.i-eyeoff')?.classList.toggle('hidden', ! show);
+        }
+    </script>
 </body>
 </html>
